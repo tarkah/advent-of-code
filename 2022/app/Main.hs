@@ -1,6 +1,10 @@
-module Main (main) where
+module Main
+    ( main
+    ) where
 
 import qualified AdventOfCode
 
+
 main :: IO ()
-main = AdventOfCode.run
+main =
+    AdventOfCode.run

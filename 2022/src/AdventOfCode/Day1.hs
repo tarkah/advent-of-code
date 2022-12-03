@@ -1,20 +1,37 @@
 module AdventOfCode.Day1
-    (run 
+    ( run
     ) where
 
 import Data.List (sort)
 
-run :: String -> String 
-run input = show max' ++ "\n" ++ show topThree
-    where groupings = map (map toInt) $ groups $ lines input
-          sums = map sum groupings
-          max' = maximum sums
-          topThree = sum $ take 3 $ reverse $ sort sums
+
+run :: String -> String
+run input =
+    show max' ++ "\n" ++ show topThree
+    where
+        groupings =
+            map (map toInt) $ groups $ lines input
+
+        sums =
+            map sum groupings
+
+        max' =
+            maximum sums
+
+        topThree =
+            sum $ take 3 $ reverse $ sort sums
+
 
 groups :: [String] -> [[String]]
-groups arr = case break (== "") arr of
-    (a,[]) -> [a]
-    (a, b) -> [a] ++ (groups $ tail b)
+groups arr =
+    case break (== "") arr of
+        ( a, [] ) ->
+            [ a ]
+
+        ( a, b ) ->
+            [ a ] ++ (groups $ tail b)
+
 
 toInt :: String -> Int
-toInt = read
+toInt =
+    read

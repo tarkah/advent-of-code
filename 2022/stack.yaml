@@ -40,7 +40,11 @@ packages:
 #   commit: e7b331f14bcffb8367cd58fbfc8b40ec7642100a
 #
 # extra-deps: []
-
+extra-deps:
+- github: hecrj/haskell-format
+  commit: 1072a2c86d915aa056f388bb18d2faec3fdc6bce
+- haskell-src-exts-1.23.1
+- happy-1.20.0
 # Override default flag values for local packages and extra-deps
 # flags: {}
 
