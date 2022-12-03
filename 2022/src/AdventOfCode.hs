@@ -3,6 +3,7 @@ module AdventOfCode
     ) where
 
 import qualified AdventOfCode.Day1 as Day1
+import qualified AdventOfCode.Day2 as Day2
 
 run :: IO ()
 run = do
@@ -16,7 +17,7 @@ newDay :: Int -> (String -> String) -> Day
 newDay _number _run = Day _number _run
 
 days :: [Day]
-days = map (uncurry newDay) $ zip [1..] [Day1.run]
+days = map (uncurry newDay) $ zip [1..] [Day1.run, Day2.run]
 
 displayDay :: Day -> String -> IO ()
 displayDay (Day number _run) input = do
