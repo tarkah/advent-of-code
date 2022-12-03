@@ -2,6 +2,8 @@ module AdventOfCode
     ( run 
     ) where
 
+import qualified AdventOfCode.Day1 as Day1
+
 run :: IO ()
 run = do
     inputs <- mapM getInput days
@@ -14,7 +16,7 @@ newDay :: Int -> (String -> String) -> Day
 newDay _number _run = Day _number _run
 
 days :: [Day]
-days = map (uncurry newDay) $ zip [1..] []
+days = map (uncurry newDay) $ zip [1..] [Day1.run]
 
 displayDay :: Day -> String -> IO ()
 displayDay (Day number _run) input = do
