@@ -10,31 +10,26 @@ import qualified AdventOfCode.Day3 as Day3
 run :: IO ()
 run = do
     inputs <- mapM getInput days
-    _ <- mapM (uncurry displayDay) $ zip days inputs
-    return ()
+    putStr . unlines . map (uncurry runDay) $ zip days inputs
 
 
 data Day
-    = Day { _number :: Int, _run :: String -> String }
+    = Day { _number :: Int, _run :: Run }
 
 
-newDay :: Int -> (String -> String) -> Day
-newDay _number _run =
-    Day _number _run
+type Run = String -> ( String, String )
 
 
 days :: [Day]
 days =
-    map (uncurry newDay) $ zip [1..] [ Day1.run, Day2.run, Day3.run ]
+    map (uncurry Day) $ zip [1..] [ Day1.run, Day2.run, Day3.run ]
 
 
-displayDay :: Day -> String -> IO ()
-displayDay (Day number _run) input = do
-    putStrLn $ "--- Day " ++ show number ++ " ---"
-    putStrLn result
-    putStrLn ""
+runDay :: Day -> String -> String
+runDay (Day number _run) input =
+    unlines [ "--- Day " ++ show number ++ " ---", part1, part2 ]
     where
-        result =
+        ( part1, part2 ) =
             _run input
 
 

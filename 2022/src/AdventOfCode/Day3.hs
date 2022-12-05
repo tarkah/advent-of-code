@@ -8,9 +8,9 @@ import Data.Maybe (catMaybes)
 import qualified Data.Set as Set
 
 
-run :: String -> String
+run :: String -> ( String, String )
 run input =
-    (solve1 input) ++ "\n" ++ (solve2 input)
+    ( solve1 input, solve2 input )
     where
         solve1 =
             show . sum . priorities . intersections . parseSacks

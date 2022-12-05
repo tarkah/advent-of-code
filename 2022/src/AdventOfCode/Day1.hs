@@ -5,9 +5,9 @@ module AdventOfCode.Day1
 import Data.List (sort)
 
 
-run :: String -> String
+run :: String -> ( String, String )
 run input =
-    show max' ++ "\n" ++ show topThree
+    ( show max', show topThree )
     where
         groupings =
             map (map toInt) $ groups $ lines input

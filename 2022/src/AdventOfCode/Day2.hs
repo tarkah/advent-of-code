@@ -5,9 +5,9 @@ module AdventOfCode.Day2
 import Data.Maybe (catMaybes)
 
 
-run :: String -> String
+run :: String -> ( String, String )
 run input =
-    (show $ total matches) ++ "\n" ++ (show $ total planMatches)
+    ( show $ total matches, show $ total planMatches )
     where
         matches =
             parseMatches input
