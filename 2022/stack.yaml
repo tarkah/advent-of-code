@@ -41,6 +41,7 @@ packages:
 #
 # extra-deps: []
 extra-deps:
+# Formatter
 - github: hecrj/haskell-format
   commit: 1072a2c86d915aa056f388bb18d2faec3fdc6bce
 - haskell-src-exts-1.23.1
