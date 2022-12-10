@@ -1,4 +1,4 @@
-module AdventOfCode.Day6
+module AdventOfCode.Day06
     ( run
     ) where
 

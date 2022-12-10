@@ -2,18 +2,19 @@ module AdventOfCode
     ( run
     ) where
 
+import qualified AdventOfCode.Day01 as Day1
+import qualified AdventOfCode.Day02 as Day2
+import qualified AdventOfCode.Day03 as Day3
+import qualified AdventOfCode.Day04 as Day4
+import qualified AdventOfCode.Day05 as Day5
+import qualified AdventOfCode.Day06 as Day6
+import qualified AdventOfCode.Day07 as Day7
+import qualified AdventOfCode.Day08 as Day8
+import qualified AdventOfCode.Day09 as Day9
+
 import System.Environment (getArgs)
 import Text.Read (readMaybe)
-import qualified AdventOfCode.Day1 as Day1
-import qualified AdventOfCode.Day2 as Day2
-import qualified AdventOfCode.Day3 as Day3
-import qualified AdventOfCode.Day4 as Day4
-import qualified AdventOfCode.Day5 as Day5
-import qualified AdventOfCode.Day6 as Day6
-import qualified AdventOfCode.Day7 as Day7
-import qualified AdventOfCode.Day8 as Day8
-import qualified AdventOfCode.Day9 as Day9
-
+import Text.Printf (printf)
 
 run :: IO ()
 run = do
@@ -54,4 +55,4 @@ runDay (Day number _run) input =
 
 getInput :: Day -> IO String
 getInput (Day number _) =
-    readFile $ "input/Day" ++ show number ++ ".txt"
+    readFile $ "input/Day" ++ printf "%02d" number ++ ".txt"

@@ -26,15 +26,16 @@ source-repository head
 library
   exposed-modules:
       AdventOfCode
-      AdventOfCode.Day1
-      AdventOfCode.Day2
-      AdventOfCode.Day3
-      AdventOfCode.Day4
-      AdventOfCode.Day5
-      AdventOfCode.Day6
-      AdventOfCode.Day7
-      AdventOfCode.Day8
-      AdventOfCode.Day9
+      AdventOfCode.Day01
+      AdventOfCode.Day02
+      AdventOfCode.Day03
+      AdventOfCode.Day04
+      AdventOfCode.Day05
+      AdventOfCode.Day06
+      AdventOfCode.Day07
+      AdventOfCode.Day08
+      AdventOfCode.Day09
+      AdventOfCode.Day10
   other-modules:
       Paths_advent_of_code
   hs-source-dirs:
