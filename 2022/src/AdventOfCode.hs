@@ -2,6 +2,9 @@ module AdventOfCode
     ( run
     ) where
 
+import System.Environment (getArgs)
+import Text.Printf (printf)
+import Text.Read (readMaybe)
 import qualified AdventOfCode.Day01 as Day1
 import qualified AdventOfCode.Day02 as Day2
 import qualified AdventOfCode.Day03 as Day3
@@ -11,10 +14,8 @@ import qualified AdventOfCode.Day06 as Day6
 import qualified AdventOfCode.Day07 as Day7
 import qualified AdventOfCode.Day08 as Day8
 import qualified AdventOfCode.Day09 as Day9
+import qualified AdventOfCode.Day10 as Day10
 
-import System.Environment (getArgs)
-import Text.Read (readMaybe)
-import Text.Printf (printf)
 
 run :: IO ()
 run = do
@@ -42,7 +43,7 @@ days :: [Day]
 days =
     map (uncurry Day) $
         zip [1..]
-            [ Day1.run, Day2.run, Day3.run, Day4.run, Day5.run, Day6.run, Day7.run, Day8.run, Day9.run ]
+            [ Day1.run, Day2.run, Day3.run, Day4.run, Day5.run, Day6.run, Day7.run, Day8.run, Day9.run, Day10.run ]
 
 
 runDay :: Day -> String -> String
