@@ -15,6 +15,7 @@ import qualified AdventOfCode.Day07 as Day7
 import qualified AdventOfCode.Day08 as Day8
 import qualified AdventOfCode.Day09 as Day9
 import qualified AdventOfCode.Day10 as Day10
+import qualified AdventOfCode.Day11 as Day11
 
 
 run :: IO ()
@@ -43,7 +44,7 @@ days :: [Day]
 days =
     map (uncurry Day) $
         zip [1..]
-            [ Day1.run, Day2.run, Day3.run, Day4.run, Day5.run, Day6.run, Day7.run, Day8.run, Day9.run, Day10.run ]
+            [ Day1.run, Day2.run, Day3.run, Day4.run, Day5.run, Day6.run, Day7.run, Day8.run, Day9.run, Day10.run, Day11.run ]
 
 
 runDay :: Day -> String -> String
