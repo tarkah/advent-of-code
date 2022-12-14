@@ -2,6 +2,8 @@ module AdventOfCode
     ( run
     ) where
 
+import Control.Monad (join)
+import Data.List (uncons)
 import System.Environment (getArgs)
 import Text.Printf (printf)
 import Text.Read (readMaybe)
@@ -16,6 +18,7 @@ import qualified AdventOfCode.Day08 as Day8
 import qualified AdventOfCode.Day09 as Day9
 import qualified AdventOfCode.Day10 as Day10
 import qualified AdventOfCode.Day11 as Day11
+import qualified AdventOfCode.Day12 as Day12
 
 
 run :: IO ()
@@ -24,7 +27,7 @@ run = do
 
     let
         day =
-            readMaybe . head $ args
+            join . fmap readMaybe . fmap fst . uncons $ args
 
         filterDay =
             maybe id (\d -> filter ((== d) . _number . fst)) day
@@ -44,7 +47,19 @@ days :: [Day]
 days =
     map (uncurry Day) $
         zip [1..]
-            [ Day1.run, Day2.run, Day3.run, Day4.run, Day5.run, Day6.run, Day7.run, Day8.run, Day9.run, Day10.run, Day11.run ]
+            [ Day1.run
+            , Day2.run
+            , Day3.run
+            , Day4.run
+            , Day5.run
+            , Day6.run
+            , Day7.run
+            , Day8.run
+            , Day9.run
+            , Day10.run
+            , Day11.run
+            , Day12.run
+            ]
 
 
 runDay :: Day -> String -> String

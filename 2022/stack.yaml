@@ -29,7 +29,7 @@ resolver: ghc-9.4.2
 #   - auto-update
 #   - wai
 packages:
-- .
+  - .
 # Dependency packages to be pulled from upstream that are not in the resolver.
 # These entries can reference officially published versions as well as
 # forks / in-progress versions pinned to a git hash. For example:
@@ -41,11 +41,12 @@ packages:
 #
 # extra-deps: []
 extra-deps:
-# Formatter
-- github: hecrj/haskell-format
-  commit: 1072a2c86d915aa056f388bb18d2faec3fdc6bce
-- haskell-src-exts-1.23.1
-- happy-1.20.0
+  - parallel-3.2.2.0@sha256:6edd5a06938cea3d28b406d5231683f89737e854af144a8800aa69e1eee785e0,1821
+  # Formatter
+  - github: hecrj/haskell-format
+    commit: 1072a2c86d915aa056f388bb18d2faec3fdc6bce
+  - haskell-src-exts-1.23.1
+  - happy-1.20.0
 # Override default flag values for local packages and extra-deps
 # flags: {}
 
