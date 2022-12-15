@@ -20,6 +20,7 @@ import qualified AdventOfCode.Day10 as Day10
 import qualified AdventOfCode.Day11 as Day11
 import qualified AdventOfCode.Day12 as Day12
 import qualified AdventOfCode.Day13 as Day13
+import qualified AdventOfCode.Day14 as Day14
 
 
 run :: IO ()
@@ -61,6 +62,7 @@ days =
             , Day11.run
             , Day12.run
             , Day13.run
+            , Day14.run
             ]
 
 
