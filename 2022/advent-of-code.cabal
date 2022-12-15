@@ -38,6 +38,7 @@ library
       AdventOfCode.Day10
       AdventOfCode.Day11
       AdventOfCode.Day12
+      AdventOfCode.Day13
   other-modules:
       Paths_advent_of_code
   hs-source-dirs:
