@@ -1,20 +1,20 @@
-# aoc_2024
+# aoc
 
-[![Package Version](https://img.shields.io/hexpm/v/aoc_2024)](https://hex.pm/packages/aoc_2024)
-[![Hex Docs](https://img.shields.io/badge/hex-docs-ffaff3)](https://hexdocs.pm/aoc_2024/)
+[![Package Version](https://img.shields.io/hexpm/v/aoc)](https://hex.pm/packages/aoc)
+[![Hex Docs](https://img.shields.io/badge/hex-docs-ffaff3)](https://hexdocs.pm/aoc/)
 
 ```sh
-gleam add aoc_2024@1
+gleam add aoc@1
 ```
 ```gleam
-import aoc_2024
+import aoc
 
 pub fn main() {
   // TODO: An example of the project in use
 }
 ```
 
-Further documentation can be found at <https://hexdocs.pm/aoc_2024>.
+Further documentation can be found at <https://hexdocs.pm/aoc>.
 
 ## Development
 

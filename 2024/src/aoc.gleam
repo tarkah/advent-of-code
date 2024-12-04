@@ -4,8 +4,9 @@ import gleam/list
 
 import aoc/day1
 import aoc/day2
+import aoc/day3
 
-const days = [day1.run, day2.run]
+const days = [day1.run, day2.run, day3.run]
 
 pub fn main() {
   io.println("AOC 2024 with Gleam!")
