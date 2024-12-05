@@ -34,39 +34,50 @@ fn is_conditional(instruction: Instruction) -> Bool {
 }
 
 fn process(instructions: List(Instruction)) -> Int {
-  process_loop(instructions, True)
+  process_loop(instructions, True, 0)
 }
 
-fn process_loop(instructions: List(Instruction), enabled: Bool) -> Int {
+fn process_loop(
+  instructions: List(Instruction),
+  enabled: Bool,
+  total: Int,
+) -> Int {
   case instructions {
-    [Mul(a, b), ..t] if enabled -> a * b + process_loop(t, enabled)
-    [Do, ..t] -> process_loop(t, True)
-    [Dont, ..t] -> process_loop(t, False)
-    [_, ..t] -> process_loop(t, enabled)
-    [] -> 0
+    [Mul(a, b), ..t] if enabled -> process_loop(t, enabled, total + a * b)
+    [Do, ..t] -> process_loop(t, True, total)
+    [Dont, ..t] -> process_loop(t, False, total)
+    [_, ..t] -> process_loop(t, enabled, total)
+    [] -> total
   }
 }
 
 fn parse(s: String) -> List(Instruction) {
+  parse_loop(s, []) |> list.reverse
+}
+
+fn parse_loop(s: String, parsed: List(Instruction)) -> List(Instruction) {
   case s {
     "mul(" <> rest -> {
       let inner = {
         use #(maybe_lhs, rest) <- result.then(string.split_once(rest, ","))
         use lhs <- result.then(int.parse(maybe_lhs))
         use #(maybe_rhs, rest) <- result.then(string.split_once(rest, ")"))
-        use rhs <- result.map(int.parse(maybe_rhs))
+        use rhs <- result.then(int.parse(maybe_rhs))
 
-        [Mul(lhs, rhs), ..parse(rest)]
+        Ok(#(Mul(lhs, rhs), rest))
       }
 
-      inner |> result.lazy_unwrap(fn() { parse(rest) })
+      case inner {
+        Ok(#(mul, rest)) -> parse_loop(rest, [mul, ..parsed])
+        Error(_) -> parse_loop(rest, parsed)
+      }
     }
-    "do()" <> rest -> [Do, ..parse(rest)]
-    "don't()" <> rest -> [Dont, ..parse(rest)]
-    "" -> []
+    "do()" <> rest -> parse_loop(rest, [Do, ..parsed])
+    "don't()" <> rest -> parse_loop(rest, [Dont, ..parsed])
+    "" -> parsed
     _ -> {
       let assert Ok(#(_, rest)) = string.pop_grapheme(s)
-      parse(rest)
+      parse_loop(rest, parsed)
     }
   }
 }
