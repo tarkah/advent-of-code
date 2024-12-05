@@ -107,6 +107,10 @@ fn is_xmas(hit: Hit) -> Bool {
 }
 
 fn hits(run: CellRun) -> List(Hit) {
+  hits_loop(run, [])
+}
+
+fn hits_loop(run: CellRun, hits: List(Hit)) -> List(Hit) {
   case run.cells {
     [
       Cell(
@@ -126,7 +130,8 @@ fn hits(run: CellRun) -> List(Hit) {
         ..,
       ) as s,
       ..t
-    ] -> [Xmas(x, m, a, s, run.dir), ..hits(CellRun([s, ..t], run.dir))]
+    ] ->
+      hits_loop(CellRun([s, ..t], run.dir), [Xmas(x, m, a, s, run.dir), ..hits])
     [
       Cell(
         char: "M",
@@ -141,7 +146,7 @@ fn hits(run: CellRun) -> List(Hit) {
         ..,
       ) as s,
       ..t
-    ] -> [Mas(m, a, s, run.dir), ..hits(CellRun([s, ..t], run.dir))]
+    ] -> hits_loop(CellRun([s, ..t], run.dir), [Mas(m, a, s, run.dir), ..hits])
     [
       Cell(
         char: "S",
@@ -160,7 +165,8 @@ fn hits(run: CellRun) -> List(Hit) {
         ..,
       ) as x,
       ..t
-    ] -> [Xmas(x, m, a, s, run.dir), ..hits(CellRun([x, ..t], run.dir))]
+    ] ->
+      hits_loop(CellRun([x, ..t], run.dir), [Xmas(x, m, a, s, run.dir), ..hits])
     [
       Cell(
         char: "S",
@@ -175,9 +181,9 @@ fn hits(run: CellRun) -> List(Hit) {
         ..,
       ) as m,
       ..t
-    ] -> [Mas(m, a, s, run.dir), ..hits(CellRun([m, ..t], run.dir))]
-    [_, ..t] -> hits(CellRun(t, run.dir))
-    [] -> []
+    ] -> hits_loop(CellRun([m, ..t], run.dir), [Mas(m, a, s, run.dir), ..hits])
+    [_, ..t] -> hits_loop(CellRun(t, run.dir), hits)
+    [] -> hits
   }
 }
 
