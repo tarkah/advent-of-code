@@ -6,7 +6,7 @@ import gleam/result
 import gleam/set
 import gleam/string
 
-import aoc/util.{pair_try_map, uncurry}
+import util.{pair_try_map, uncurry}
 
 pub fn run() -> #(String, String) {
   let #(left, right) =

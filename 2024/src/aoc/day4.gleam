@@ -6,7 +6,7 @@ import gleam/result
 import gleam/set
 import gleam/string
 
-import aoc/util.{uncurry}
+import util.{uncurry}
 
 pub fn run() {
   let lines = input |> string.split("\n")

@@ -5,7 +5,7 @@ import gleam/result
 import gleam/set
 import gleam/string
 
-import aoc/util.{pair_try_map}
+import util.{pair_try_map}
 
 pub fn run() {
   let #(order_rules, updates) = parse(input)
