@@ -16,7 +16,7 @@ pub fn run() {
 
   // For each direction, get all runs and then get all hits
   let hits =
-    [N, W, S, E, NW, NE, SW, SE]
+    [S, E, SW, SE]
     |> list.flat_map(cell_runs_by_direction(matrix, _))
     |> list.flat_map(hits)
     |> set.from_list
@@ -73,28 +73,20 @@ type Hit {
 }
 
 type Direction {
-  N
-  W
   S
   E
-  NW
-  NE
   SW
   SE
 }
 
 type Edge {
   Top
-  Bottom
   Left
   Right
 }
 
 fn makes_x(a: Direction, b: Direction) -> Bool {
   case a, b {
-    NW, SW | SW, NW -> True
-    NE, SE | SE, NE -> True
-    NW, NE | NE, NW -> True
     SW, SE | SE, SW -> True
     _, _ -> False
   }
@@ -134,7 +126,7 @@ fn hits(run: CellRun) -> List(Hit) {
         ..,
       ) as s,
       ..t
-    ] -> [Xmas(x, m, a, s, run.dir), ..hits(CellRun(t, run.dir))]
+    ] -> [Xmas(x, m, a, s, run.dir), ..hits(CellRun([s, ..t], run.dir))]
     [
       Cell(
         char: "M",
@@ -149,7 +141,41 @@ fn hits(run: CellRun) -> List(Hit) {
         ..,
       ) as s,
       ..t
-    ] -> [Mas(m, a, s, run.dir), ..hits(CellRun(t, run.dir))]
+    ] -> [Mas(m, a, s, run.dir), ..hits(CellRun([s, ..t], run.dir))]
+    [
+      Cell(
+        char: "S",
+        ..,
+      ) as s,
+      Cell(
+        char: "A",
+        ..,
+      ) as a,
+      Cell(
+        char: "M",
+        ..,
+      ) as m,
+      Cell(
+        char: "X",
+        ..,
+      ) as x,
+      ..t
+    ] -> [Xmas(x, m, a, s, run.dir), ..hits(CellRun([x, ..t], run.dir))]
+    [
+      Cell(
+        char: "S",
+        ..,
+      ) as s,
+      Cell(
+        char: "A",
+        ..,
+      ) as a,
+      Cell(
+        char: "M",
+        ..,
+      ) as m,
+      ..t
+    ] -> [Mas(m, a, s, run.dir), ..hits(CellRun([m, ..t], run.dir))]
     [_, ..t] -> hits(CellRun(t, run.dir))
     [] -> []
   }
@@ -160,9 +186,6 @@ fn edge_positions(matrix: Matrix, edge: Edge) -> List(Pos) {
     Top ->
       list.range(0, matrix.width - 1)
       |> list.map(fn(i) { Pos(i, 0) })
-    Bottom ->
-      list.range(0, matrix.width - 1)
-      |> list.map(fn(i) { Pos(i, matrix.height - 1) })
     Left ->
       list.range(0, matrix.height - 1)
       |> list.map(fn(i) { Pos(0, i) })
@@ -181,12 +204,8 @@ fn cell_runs_by_direction(matrix: Matrix, direction: Direction) -> List(CellRun)
   }
 
   case direction {
-    N -> runs_for_edges([Bottom])
-    W -> runs_for_edges([Right])
     S -> runs_for_edges([Top])
     E -> runs_for_edges([Left])
-    NW -> runs_for_edges([Bottom, Right])
-    NE -> runs_for_edges([Bottom, Left])
     SW -> runs_for_edges([Top, Right])
     SE -> runs_for_edges([Top, Left])
   }
@@ -200,15 +219,8 @@ fn cell_run(
   dir: Direction,
 ) -> Result(CellRun, Nil) {
   let length = case dir {
-    N -> y + 1
-    W -> x + 1
     S -> matrix.height - y
     E -> matrix.width - x
-    NW -> int.min(x + 1, y + 1)
-    NE -> {
-      let h = matrix.width - x
-      int.min(h, y + 1)
-    }
     SW -> {
       let v = matrix.height - y
       int.min(v, x + 1)
@@ -226,12 +238,8 @@ fn cell_run(
       list.range(0, length - 1)
       |> list.map(fn(i) {
         let #(x, y) = case dir {
-          N -> #(x, y - i)
-          W -> #(x - i, y)
           S -> #(x, y + i)
           E -> #(x + i, y)
-          NW -> #(x - i, y - i)
-          NE -> #(x + i, y - i)
           SW -> #(x - i, y + i)
           SE -> #(x + i, y + i)
         }
