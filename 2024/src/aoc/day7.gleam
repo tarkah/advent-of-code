@@ -1,3 +1,4 @@
+import gleam/float
 import gleam/int
 import gleam/list
 import gleam/result
@@ -57,8 +58,22 @@ fn apply(op: Op, lhs: Int, rhs: Int) {
   case op {
     Add -> lhs + rhs
     Mul -> lhs * rhs
-    Concat ->
-      int.parse(int.to_string(lhs) <> int.to_string(rhs)) |> result.unwrap(0)
+    Concat -> concat(lhs, rhs)
+  }
+}
+
+fn concat(a: Int, b: Int) -> Int {
+  a * ten_power_of_digits(b) + b
+}
+
+fn ten_power_of_digits(a: Int) -> Int {
+  ten_power_of_digits_loop(a, 10)
+}
+
+fn ten_power_of_digits_loop(a: Int, out: Int) -> Int {
+  case a >= out {
+    True -> ten_power_of_digits_loop(a, out |> int.multiply(10))
+    False -> out
   }
 }
 
