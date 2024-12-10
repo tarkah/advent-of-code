@@ -6,9 +6,13 @@ import gleam/result
 import gleam/set
 import gleam/string
 
+import aoc/day.{Day, Expects}
+
 import util.{uncurry}
 
-pub fn run() {
+pub const day = Day(example, input, Expects(#(18, 9), #(2500, 1933)), run)
+
+fn run(input: String) {
   let lines = input |> string.split("\n")
   let width = lines |> list.first |> result.unwrap("") |> string.length
   let height = lines |> list.length
@@ -22,7 +26,7 @@ pub fn run() {
     |> set.from_list
 
   // How man XMAS hits?
-  let part1 = hits |> set.filter(is_xmas) |> set.size |> int.to_string
+  let part1 = hits |> set.filter(is_xmas) |> set.size
 
   // How many Xs of MAS?
   let part2 =
@@ -46,7 +50,6 @@ pub fn run() {
       |> list.length
       |> int.add(total)
     })
-    |> int.to_string
 
   #(part1, part2)
 }
@@ -259,6 +262,17 @@ fn cell_run(
     }
   }
 }
+
+const example = "MMMSXXMASM
+MSAMXMSMSA
+AMXSXMAAMM
+MSAMASMSMX
+XMASAMXAMM
+XXAMMXXAMA
+SMSMSASXSS
+SAXAMASAAA
+MAMMMXMMMM
+MXMXAXMASX"
 
 const input = "XAXAMXMXXSAMSMSMMMXMAXSAMXSMMSSSMXSSMSMMMXXMSMXAMXAXASAMXMASAXMAMMXSAMXMXMMMSXMMMSAMXSAMXSXMSMSSXAXXMASAMAMSASASXSSSXSXSXMAXSAMXMSXXXXAXMXSS
 MSAXMASMAMXMAAAASAMXMAMXMAXAMXMASAAAMAMXXMMMMXMSMXMMMXMMAMXMMMMAXSAMXSMSASMAMAMAXMASXXXMASAAXAAMMMMMXAMXMAXMASXSXMASAMAMMMXMAMXAMXSASMMXSAMX

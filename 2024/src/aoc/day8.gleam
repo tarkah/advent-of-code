@@ -1,16 +1,19 @@
 import gleam/dict
-import gleam/int
 import gleam/list
 import gleam/option.{None, Some}
 import gleam/result
 import gleam/set.{type Set}
 import gleam/string
 
-pub fn run() {
+import aoc/day.{Day, Expects}
+
+pub const day = Day(example, input, Expects(#(14, 34), #(364, 1231)), run)
+
+fn run(input: String) {
   let map = parse(input)
 
-  let part1 = antinodes(map, OneStep) |> set.size |> int.to_string
-  let part2 = antinodes(map, AllSteps) |> set.size |> int.to_string
+  let part1 = antinodes(map, OneStep) |> set.size
+  let part2 = antinodes(map, AllSteps) |> set.size
 
   #(part1, part2)
 }
@@ -105,6 +108,19 @@ fn parse(input: String) -> Map {
     })
   })
 }
+
+const example = "............
+........0...
+.....0......
+.......0....
+....0.......
+......A.....
+............
+............
+........A...
+.........A..
+............
+............"
 
 const input = ".A...........5........................pL..........
 .................................p......L.........

@@ -6,9 +6,18 @@ import gleam/result
 import gleam/set
 import gleam/string
 
+import aoc/day.{Day, Expects}
+
 import util.{pair_try_map, uncurry}
 
-pub fn run() -> #(String, String) {
+pub const day = Day(
+  example,
+  input,
+  Expects(#(11, 31), #(2_164_381, 20_719_933)),
+  run,
+)
+
+fn run(input: String) -> #(Int, Int) {
   let #(left, right) =
     input
     |> string.split("\n")
@@ -25,7 +34,6 @@ pub fn run() -> #(String, String) {
     |> list.map(uncurry(int.subtract))
     |> list.map(int.absolute_value)
     |> list.fold(0, int.add)
-    |> int.to_string
 
   let part2 = {
     let counts =
@@ -39,11 +47,17 @@ pub fn run() -> #(String, String) {
       dict.get(counts, a) |> result.unwrap(0) |> int.multiply(a)
     })
     |> list.fold(0, int.add)
-    |> int.to_string
   }
 
   #(part1, part2)
 }
+
+const example = "3   4
+4   3
+2   5
+1   3
+3   9
+3   3"
 
 const input = "35039   67568
 61770   80134

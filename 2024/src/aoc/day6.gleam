@@ -6,7 +6,11 @@ import gleam/result
 import gleam/set
 import gleam/string
 
-pub fn run() {
+import aoc/day.{Day, Expects}
+
+pub const day = Day(example, input, Expects(#(41, 6), #(5461, 1836)), run)
+
+fn run(input: String) {
   let map = parse(input)
   let guard = Guard(map.start, Up)
 
@@ -22,7 +26,6 @@ pub fn run() {
     walked_positions
     |> set.from_list
     |> set.size
-    |> int.to_string
 
   // Add each visited position as an obstruction,
   // except at the starting position, and see if
@@ -38,7 +41,6 @@ pub fn run() {
     })
     |> set.from_list
     |> set.size
-    |> int.to_string
 
   #(part1, part2)
 }
@@ -292,16 +294,16 @@ fn parse(input: String) -> Map {
   })
 }
 
-// const example = "....#.....
-// .........#
-// ..........
-// ..#.......
-// .......#..
-// ..........
-// .#..^.....
-// ........#.
-// #.........
-// ......#..."
+const example = "....#.....
+.........#
+..........
+..#.......
+.......#..
+..........
+.#..^.....
+........#.
+#.........
+......#..."
 
 const input = "....#.................#......................#..........................#..................#....##..#...........#.................
 ...................................#...............................#......#..#...............................#....................

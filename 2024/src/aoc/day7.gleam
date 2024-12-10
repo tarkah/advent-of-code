@@ -3,7 +3,16 @@ import gleam/list
 import gleam/result
 import gleam/string
 
-pub fn run() {
+import aoc/day.{Day, Expects}
+
+pub const day = Day(
+  example,
+  input,
+  Expects(#(3749, 11_387), #(932_137_732_557, 661_823_605_105_500)),
+  run,
+)
+
+fn run(input: String) {
   let checks = parse(input)
 
   let part1 =
@@ -11,14 +20,12 @@ pub fn run() {
     |> list.filter(check(_, [Add, Mul]))
     |> list.map(fn(check) { check.lhs })
     |> list.fold(0, int.add)
-    |> int.to_string
 
   let part2 =
     checks
     |> list.filter(check(_, [Add, Mul, Concat]))
     |> list.map(fn(check) { check.lhs })
     |> list.fold(0, int.add)
-    |> int.to_string
 
   #(part1, part2)
 }
@@ -76,6 +83,16 @@ type Op {
   Mul
   Concat
 }
+
+const example = "190: 10 19
+3267: 81 40 27
+83: 17 5
+156: 15 6
+7290: 6 8 6 15
+161011: 16 10 13
+192: 17 8 14
+21037: 9 7 18 13
+292: 11 6 16 20"
 
 const input = "5055314034: 10 1 489 35 44 14 16 4
 108773: 18 1 121 2 6 38

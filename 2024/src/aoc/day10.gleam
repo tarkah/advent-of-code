@@ -7,7 +7,11 @@ import gleam/result
 import gleam/set
 import gleam/string
 
-pub fn run() {
+import aoc/day.{Day, Expects}
+
+pub const day = Day(example, input, Expects(#(36, 81), #(512, 1045)), run)
+
+fn run(input: String) {
   let map = parse(input)
 
   let part1 =
@@ -16,7 +20,6 @@ pub fn run() {
     |> dict.values
     |> list.map(fn(stats) { stats.score })
     |> list.fold(0, int.add)
-    |> int.to_string
 
   let part2 =
     map
@@ -24,7 +27,6 @@ pub fn run() {
     |> dict.values
     |> list.map(fn(stats) { stats.rating })
     |> list.fold(0, int.add)
-    |> int.to_string
 
   #(part1, part2)
 }
@@ -144,14 +146,14 @@ fn parse(input: String) -> Map {
   })
 }
 
-// const example = "89010123
-// 78121874
-// 87430965
-// 96549874
-// 45678903
-// 32019012
-// 01329801
-// 10456732"
+const example = "89010123
+78121874
+87430965
+96549874
+45678903
+32019012
+01329801
+10456732"
 
 const input = "78434565658934341239890154327898789410169567876
 89125676543823430123763267016505654321678478965

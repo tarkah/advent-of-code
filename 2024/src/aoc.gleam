@@ -8,6 +8,7 @@ import gleam/result
 import env
 import time.{Millisecond}
 
+import aoc/day
 import aoc/day1
 import aoc/day10
 import aoc/day2
@@ -20,8 +21,8 @@ import aoc/day8
 import aoc/day9
 
 const days = [
-  day1.run, day2.run, day3.run, day4.run, day5.run, day6.run, day7.run, day8.run,
-  day9.run, day10.run,
+  day1.day, day2.day, day3.day, day4.day, day5.day, day6.day, day7.day, day8.day,
+  day9.day, day10.day,
 ]
 
 pub fn main() {
@@ -35,30 +36,16 @@ pub fn main() {
 fn run(filter: Option(Int)) {
   io.println("AOC 2024 with Gleam!")
 
-  let run_day = fn(f, num) {
-    let now = time.now()
-
-    let #(part1, part2) = f()
-
-    let elapsed = now |> time.elapsed(Millisecond)
-
-    io.println("")
-    io.println("==== DAY " <> num |> int.to_string <> " ====")
-    io.println({ "1: " <> part1 })
-    io.println({ "2: " <> part2 })
-    io.println({ "in " <> elapsed |> int.to_string <> "ms" })
-  }
-
   let now = time.now()
 
   days
-  |> list.index_map(fn(f, i) {
+  |> list.index_map(fn(d, i) {
     let num = i + 1
     let skip = option.is_some(filter) && filter != Some(num)
 
     use <- bool.guard(when: skip, return: Nil)
 
-    run_day(f, num)
+    day.run(d, num)
   })
 
   let elapsed = now |> time.elapsed(Millisecond)

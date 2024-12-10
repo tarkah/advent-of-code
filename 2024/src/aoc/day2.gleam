@@ -4,7 +4,11 @@ import gleam/option.{type Option, None, Some}
 import gleam/result
 import gleam/string
 
-pub fn run() {
+import aoc/day.{Day, Expects}
+
+pub const day = Day(example, input, Expects(#(2, 4), #(680, 710)), run)
+
+fn run(input: String) {
   let reports =
     input
     |> string.split("\n")
@@ -12,8 +16,8 @@ pub fn run() {
     |> list.map(list.try_map(_, int.parse))
     |> result.values
 
-  let part1 = reports |> list.count(is_report_safe(_, 0)) |> int.to_string
-  let part2 = reports |> list.count(is_report_safe(_, 1)) |> int.to_string
+  let part1 = reports |> list.count(is_report_safe(_, False))
+  let part2 = reports |> list.count(is_report_safe(_, True))
 
   #(part1, part2)
 }
@@ -26,39 +30,56 @@ type Direction {
   Desc
 }
 
-type State {
-  State(last: Option(Direction), errors: Int)
+fn is_report_safe(report: Report, allow_single_failure: Bool) -> Bool {
+  case allow_single_failure {
+    False -> is_report_safe_loop(report, None, False)
+
+    True ->
+      // Does removing a single element
+      // allow for a safe list?
+      list.range(0, list.length(report) - 1)
+      |> list.any(fn(i) {
+        let #(pre, rest) = list.split(report, i)
+        let assert Ok(post) = list.rest(rest)
+
+        is_report_safe_loop(list.append(pre, post), None, False)
+      })
+  }
 }
 
-fn is_report_safe(report: Report, tolerance: Int) -> Bool {
-  let windows = list.window(report, 2)
+fn is_report_safe_loop(
+  report: Report,
+  dir: Option(Direction),
+  is_safe: Bool,
+) -> Bool {
+  case report {
+    [a, b, ..rest] -> {
+      let diff = b - a |> int.absolute_value
+      let diff_dir = case a > b {
+        True -> Desc
+        False -> Asc
+      }
+      let is_valid =
+        { option.is_none(dir) || dir == Some(diff_dir) }
+        && diff >= 1
+        && diff <= 3
 
-  list.try_fold(windows, State(None, 0), fn(state, window) {
-    case window {
-      [a, b]
-        if a > b
-        && a - b >= 1
-        && a - b <= 3
-        && { state.last == None || state.last == Some(Desc) }
-      -> {
-        Ok(State(..state, last: Some(Desc)))
+      case is_valid {
+        True -> is_report_safe_loop([b, ..rest], Some(diff_dir), True)
+
+        False -> False
       }
-      [a, b]
-        if a < b
-        && b - a >= 1
-        && b - a <= 3
-        && { state.last == None || state.last == Some(Asc) }
-      -> {
-        Ok(State(..state, last: Some(Asc)))
-      }
-      _ if state.errors < tolerance -> {
-        Ok(State(..state, errors: state.errors + 1))
-      }
-      _ -> Error(Nil)
     }
-  })
-  |> result.is_ok
+    _ -> is_safe
+  }
 }
+
+const example = "7 6 4 2 1
+1 2 7 8 9
+9 7 6 2 1
+1 3 2 4 5
+8 6 4 4 1
+1 3 6 7 9"
 
 const input = "40 42 45 46 49 47
 65 66 68 71 72 72
