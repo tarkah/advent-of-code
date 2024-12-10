@@ -9,6 +9,7 @@ import env
 import time.{Millisecond}
 
 import aoc/day1
+import aoc/day10
 import aoc/day2
 import aoc/day3
 import aoc/day4
@@ -20,7 +21,7 @@ import aoc/day9
 
 const days = [
   day1.run, day2.run, day3.run, day4.run, day5.run, day6.run, day7.run, day8.run,
-  day9.run,
+  day9.run, day10.run,
 ]
 
 pub fn main() {
