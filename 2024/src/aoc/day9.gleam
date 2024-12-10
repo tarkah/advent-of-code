@@ -106,15 +106,14 @@ fn compact_by_group_loop_inner(
       ])
 
     [#(GroupFile(_, id), idx), ..rest] if found && id == file_id ->
-      compact_by_group_loop_inner(file, rest, found, [
-        #(GroupFree(file_size), idx),
-        ..compacted
-      ])
+      [#(GroupFree(file_size), idx), ..compacted]
+      |> list.reverse
+      |> list.append(rest)
 
-    [a, ..rest] ->
+    [#(_, idx) as a, ..rest] if idx < file_idx ->
       compact_by_group_loop_inner(file, rest, found, [a, ..compacted])
 
-    [] -> compacted |> list.reverse
+    rest -> compacted |> list.reverse |> list.append(rest)
   }
 }
 
