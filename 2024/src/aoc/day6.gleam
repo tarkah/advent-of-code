@@ -1,5 +1,7 @@
+import gleam/dict.{type Dict}
 import gleam/int
 import gleam/list
+import gleam/option.{None, Some}
 import gleam/result
 import gleam/set
 import gleam/string
@@ -10,9 +12,14 @@ pub fn run() {
 
   let assert Ok(walked) = walk(map, guard)
 
-  let part1 =
+  let walked_positions =
     walked
-    |> list.map(fn(guard) { guard.pos })
+    |> dict.values
+    |> list.flatten
+    |> list.flat_map(positions)
+
+  let part1 =
+    walked_positions
     |> set.from_list
     |> set.size
     |> int.to_string
@@ -21,11 +28,11 @@ pub fn run() {
   // except at the starting position, and see if
   // it creates a loop
   let part2 =
-    walked
-    |> list.filter(fn(obstacle) { obstacle.pos != map.start })
+    walked_positions
+    |> list.filter(fn(obstacle) { obstacle != map.start })
     |> list.filter_map(fn(obstacle) {
-      case walk(Map(..map, obstacles: [obstacle.pos, ..map.obstacles]), guard) {
-        Error(_) -> Ok(obstacle.pos)
+      case walk(add_obstacle(map, obstacle), guard) {
+        Error(_) -> Ok(obstacle)
         Ok(_) -> Error(Nil)
       }
     })
@@ -37,7 +44,15 @@ pub fn run() {
 }
 
 type Map {
-  Map(width: Int, height: Int, start: Pos, obstacles: List(Pos))
+  Map(
+    width: Int,
+    height: Int,
+    start: Pos,
+    // Y in ASC order
+    obstacles_by_x: Dict(Int, List(Int)),
+    // X in ASC order
+    obstacles_by_y: Dict(Int, List(Int)),
+  )
 }
 
 type Pos {
@@ -55,50 +70,85 @@ type Direction {
   Left
 }
 
-fn walk(map: Map, guard: Guard) -> Result(List(Guard), Nil) {
-  walk_loop(map, guard, [guard])
+type Move {
+  Move(start: Pos, end: Pos, dir: Direction)
+}
+
+fn walk(map: Map, guard: Guard) -> Result(Dict(Direction, List(Move)), Nil) {
+  walk_loop(map, guard, dict.new())
 }
 
 fn walk_loop(
   map: Map,
   guard: Guard,
-  walked: List(Guard),
-) -> Result(List(Guard), Nil) {
+  walked: Dict(Direction, List(Move)),
+) -> Result(Dict(Direction, List(Move)), Nil) {
   case move(map, guard, walked) {
-    Error(Loop) -> Error(Nil)
-    Error(Finished) -> Ok(walked |> list.reverse)
-    Error(Blocked) -> walk_loop(map, turn(guard), walked)
-    Ok(guard) -> {
-      walk_loop(map, guard, [guard, ..walked])
+    Error(Nil) -> Error(Nil)
+    Ok(Finished(move)) -> Ok(walked |> add_move(move))
+    Ok(Blocked(move)) -> {
+      walk_loop(
+        map,
+        turn(Guard(..guard, pos: move.end)),
+        walked |> add_move(move),
+      )
     }
   }
 }
 
-type MoveError {
-  Loop
-  Blocked
-  Finished
+fn add_move(moves: Dict(Direction, List(Move)), move: Move) {
+  moves
+  |> dict.upsert(move.dir, fn(moves) {
+    case moves {
+      None -> [move]
+      Some(moves) -> [move, ..moves]
+    }
+  })
 }
 
-fn move(map: Map, guard: Guard, walked: List(Guard)) -> Result(Guard, MoveError) {
-  let move_to = case guard.facing {
-    Up -> Pos(..guard.pos, y: guard.pos.y - 1)
-    Down -> Pos(..guard.pos, y: guard.pos.y + 1)
-    Left -> Pos(..guard.pos, x: guard.pos.x - 1)
-    Right -> Pos(..guard.pos, x: guard.pos.x + 1)
-  }
-  let next = Guard(..guard, pos: move_to)
-  let is_loop = walked |> list.contains(next)
+type Moved {
+  Blocked(Move)
+  Finished(Move)
+}
 
-  case move_to {
-    _ if is_loop -> Error(Loop)
-    Pos(x, y) if x < 0 || y < 0 || x >= map.width || y >= map.height ->
-      Error(Finished)
-    _ ->
-      case list.find(map.obstacles, fn(obstacle) { obstacle == move_to }) {
-        Ok(_) -> Error(Blocked)
-        Error(_) -> Ok(next)
+fn move(
+  map: Map,
+  guard: Guard,
+  moves: Dict(Direction, List(Move)),
+) -> Result(Moved, Nil) {
+  case next_obstacle(map, guard.pos, guard.facing) {
+    // We're finished!
+    Error(_) -> {
+      let move_to = case guard.facing {
+        Up -> Pos(..guard.pos, y: 0)
+        Down -> Pos(..guard.pos, y: map.height - 1)
+        Left -> Pos(..guard.pos, x: 0)
+        Right -> Pos(..guard.pos, x: map.width - 1)
       }
+      let move = Move(guard.pos, move_to, guard.facing)
+
+      Ok(Finished(move))
+    }
+    Ok(obstacle) -> {
+      let move_to = case guard.facing {
+        Up -> Pos(..guard.pos, y: obstacle.y + 1)
+        Down -> Pos(..guard.pos, y: obstacle.y - 1)
+        Left -> Pos(..guard.pos, x: obstacle.x + 1)
+        Right -> Pos(..guard.pos, x: obstacle.x - 1)
+      }
+      let move = Move(guard.pos, move_to, guard.facing)
+
+      let is_loop =
+        moves
+        |> dict.get(guard.facing)
+        |> result.unwrap([])
+        |> list.any(intersects(_, move))
+
+      case is_loop {
+        False -> Ok(Blocked(move))
+        True -> Error(Nil)
+      }
+    }
   }
 }
 
@@ -113,6 +163,111 @@ fn turn(guard: Guard) -> Guard {
   Guard(..guard, facing: facing)
 }
 
+fn positions(move: Move) -> List(Pos) {
+  list.range(0, length(move))
+  |> list.map(fn(i) {
+    case move.dir {
+      Up -> Pos(..move.start, y: move.start.y - i)
+      Down -> Pos(..move.start, y: move.start.y + i)
+      Left -> Pos(..move.start, x: move.start.x - i)
+      Right -> Pos(..move.start, x: move.start.x + i)
+    }
+  })
+}
+
+fn length(move: Move) -> Int {
+  case move.dir {
+    Up -> move.start.y - move.end.y
+    Down -> move.end.y - move.start.y
+    Left -> move.start.x - move.end.x
+    Right -> move.end.x - move.start.x
+  }
+}
+
+fn intersects(a: Move, b: Move) -> Bool {
+  let min = fn(a: Move) {
+    case a.dir {
+      Up | Down -> int.min(a.start.y, a.end.y)
+      Left | Right -> int.min(a.start.x, a.end.x)
+    }
+  }
+  let max = fn(a: Move) {
+    case a.dir {
+      Up | Down -> int.max(a.start.y, a.end.y)
+      Left | Right -> int.max(a.start.x, a.end.x)
+    }
+  }
+
+  let same_dir = case a.dir {
+    Up | Down -> a.start.x == b.start.x
+    Left | Right -> a.start.y == b.start.y
+  }
+
+  let a_min = min(a)
+  let a_max = max(a)
+  let b_min = min(b)
+  let b_max = max(b)
+
+  same_dir
+  && {
+    { a_min >= b_min && a_min <= b_max } || { a_max >= b_min && a_max <= b_max }
+  }
+}
+
+fn next_obstacle(map: Map, pos: Pos, dir: Direction) -> Result(Pos, Nil) {
+  case dir {
+    Up ->
+      map.obstacles_by_x
+      |> dict.get(pos.x)
+      |> result.try(fn(values) {
+        values |> list.filter(fn(y) { y < pos.y }) |> list.last
+      })
+      |> result.map(fn(y) { Pos(..pos, y: y) })
+
+    Down ->
+      map.obstacles_by_x
+      |> dict.get(pos.x)
+      |> result.try(fn(values) {
+        values |> list.filter(fn(y) { y > pos.y }) |> list.first
+      })
+      |> result.map(fn(y) { Pos(..pos, y: y) })
+
+    Left ->
+      map.obstacles_by_y
+      |> dict.get(pos.y)
+      |> result.try(fn(values) {
+        values |> list.filter(fn(x) { x < pos.x }) |> list.last
+      })
+      |> result.map(fn(x) { Pos(..pos, x: x) })
+
+    Right ->
+      map.obstacles_by_y
+      |> dict.get(pos.y)
+      |> result.try(fn(values) {
+        values |> list.filter(fn(x) { x > pos.x }) |> list.first
+      })
+      |> result.map(fn(x) { Pos(..pos, x: x) })
+  }
+}
+
+fn add_obstacle(map: Map, pos: Pos) -> Map {
+  Map(
+    ..map,
+    obstacles_by_x: dict.upsert(map.obstacles_by_x, pos.x, fn(value) {
+      case value {
+        None -> [pos.y]
+        Some(values) -> [pos.y, ..values] |> list.sort(int.compare)
+      }
+    }),
+    obstacles_by_y: dict.upsert(map.obstacles_by_y, pos.y, fn(value) {
+      case value {
+        None -> [pos.x]
+        Some(values) -> [pos.x, ..values] |> list.sort(int.compare)
+      }
+    }),
+  )
+}
+
 fn parse(input: String) -> Map {
   let grid = input |> string.split("\n") |> list.map(string.to_graphemes)
 
@@ -120,17 +275,17 @@ fn parse(input: String) -> Map {
     grid |> list.first |> result.map(list.length(_)) |> result.unwrap(0)
   let height = grid |> list.length
 
-  let map = Map(width, height, Pos(0, 0), [])
+  let map = Map(width, height, Pos(0, 0), dict.new(), dict.new())
 
   grid
   |> list.index_fold(map, fn(acc, line, y) {
     line
     |> list.index_fold(acc, fn(map, char, x) {
       case char {
-        "#" -> {
-          Map(..map, obstacles: [Pos(x, y), ..map.obstacles])
-        }
+        "#" -> add_obstacle(map, Pos(x, y))
+
         "^" -> Map(..map, start: Pos(x, y))
+
         _ -> map
       }
     })
