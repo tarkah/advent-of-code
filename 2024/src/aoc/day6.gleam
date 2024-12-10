@@ -17,7 +17,23 @@ pub fn run() {
     |> set.size
     |> int.to_string
 
-  #(part1, "")
+  // Add each visited position as an obstruction,
+  // except at the starting position, and see if
+  // it creates a loop
+  let part2 =
+    walked
+    |> list.filter(fn(obstacle) { obstacle.pos != map.start })
+    |> list.filter_map(fn(obstacle) {
+      case walk(Map(..map, obstacles: [obstacle.pos, ..map.obstacles]), guard) {
+        Error(_) -> Ok(obstacle.pos)
+        Ok(_) -> Error(Nil)
+      }
+    })
+    |> set.from_list
+    |> set.size
+    |> int.to_string
+
+  #(part1, part2)
 }
 
 type Map {
@@ -120,6 +136,17 @@ fn parse(input: String) -> Map {
     })
   })
 }
+
+// const example = "....#.....
+// .........#
+// ..........
+// ..#.......
+// .......#..
+// ..........
+// .#..^.....
+// ........#.
+// #.........
+// ......#..."
 
 const input = "....#.................#......................#..........................#..................#....##..#...........#.................
 ...................................#...............................#......#..#...............................#....................
