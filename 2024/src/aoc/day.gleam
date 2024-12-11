@@ -1,3 +1,4 @@
+import gleam/bool.{guard}
 import gleam/int
 import gleam/io
 
@@ -16,7 +17,7 @@ pub type Expects {
   Expects(example: #(Int, Int), input: #(Int, Int))
 }
 
-pub fn run(day: Day, num: Int) {
+pub fn run(day: Day, num: Int, validate: Bool) {
   let timed = fn(input, expects) {
     let now = time.now()
 
@@ -26,10 +27,12 @@ pub fn run(day: Day, num: Int) {
     let elapsed = now |> time.elapsed(Millisecond)
 
     io.println({ "1: " <> p1 |> int.to_string })
-    expect(p1, e1)
     io.println({ "2: " <> p2 |> int.to_string })
-    expect(p2, e2)
     io.println({ "in " <> elapsed |> int.to_string <> "ms" })
+
+    use <- guard(when: !validate, return: Nil)
+    expect(p1, e1)
+    expect(p2, e2)
   }
 
   io.println("")

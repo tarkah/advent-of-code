@@ -29,11 +29,11 @@ pub fn main() {
   case command(env.args()) {
     Error(err) -> io.println_error("ERROR: " <> err <> "\n\n" <> help())
     Ok(Command(help: True, ..)) -> help() |> io.println
-    Ok(Command(day: day, ..)) -> run(day)
+    Ok(Command(day: day, validate: validate, ..)) -> run(day, validate)
   }
 }
 
-fn run(filter: Option(Int)) {
+fn run(filter: Option(Int), validate: Bool) {
   io.println("AOC 2024 with Gleam!")
 
   let now = time.now()
@@ -45,7 +45,7 @@ fn run(filter: Option(Int)) {
 
     use <- bool.guard(when: skip, return: Nil)
 
-    day.run(d, num)
+    day.run(d, num, validate)
   })
 
   let elapsed = now |> time.elapsed(Millisecond)
@@ -55,16 +55,20 @@ fn run(filter: Option(Int)) {
 }
 
 type Command {
-  Command(help: Bool, day: Option(Int))
+  Command(help: Bool, validate: Bool, day: Option(Int))
 }
 
 fn command(args: List(String)) -> Result(Command, String) {
-  command_loop(args, Command(False, None))
+  command_loop(args, Command(False, True, None))
 }
 
 fn command_loop(args: List(String), cmd: Command) -> Result(Command, String) {
   case args {
     ["--help", ..rest] -> command_loop(rest, Command(..cmd, help: True))
+    ["--no-validate", ..rest] ->
+      command_loop(rest, Command(..cmd, validate: False))
+    ["--" <> option, ..] -> Error("Unknown option --" <> option)
+    ["-" <> option, ..] -> Error("Unknown option -" <> option)
     [day, ..rest] ->
       int.parse(day)
       |> result.replace_error("day must be an int")
@@ -82,5 +86,6 @@ args:
   [day]   Run a specific day, otherwise run all days
 
 options:
-  --help  Print help"
+  --no-validate  Don't validate day output vs expects
+  --help         Print help"
 }
