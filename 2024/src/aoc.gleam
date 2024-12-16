@@ -15,6 +15,7 @@ import aoc/day11
 import aoc/day12
 import aoc/day13
 import aoc/day14
+import aoc/day15
 import aoc/day2
 import aoc/day3
 import aoc/day4
@@ -26,7 +27,7 @@ import aoc/day9
 
 const days = [
   day1.day, day2.day, day3.day, day4.day, day5.day, day6.day, day7.day, day8.day,
-  day9.day, day10.day, day11.day, day12.day, day13.day, day14.day,
+  day9.day, day10.day, day11.day, day12.day, day13.day, day14.day, day15.day,
 ]
 
 pub fn main() {
