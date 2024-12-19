@@ -9,7 +9,7 @@ import aoc/day.{Day, Expects}
 pub const day = Day(
   example,
   input,
-  Expects(#(10_092, 9021), #(1_563_092, 0)),
+  Expects(#(10_092, 9021), #(1_563_092, 1_582_688)),
   run,
 )
 
