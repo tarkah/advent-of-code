@@ -4,7 +4,7 @@ import gleam/list
 import gleam/option.{type Option, None, Some}
 import gleam/pair
 import gleam/result
-import gleam/set.{type Set}
+import gleam/set
 import gleam/string
 
 import aoc/day.{Day, Expects}
@@ -19,24 +19,33 @@ pub const day = Day(
 fn run(input: String) {
   let maze = parse(input)
 
-  let assert Some(#(score, tiles)) = shortest_path(maze)
+  let assert Some(#(score, all_paths)) = shortest_path(maze, AllShortest)
 
   let unique_tiles =
-    tiles
+    all_paths
+    |> list.flat_map(list.map(_, pair.first))
+    |> set.from_list
     |> set.size
 
   #(score, unique_tiles)
 }
 
-type Maze {
-  Maze(width: Int, height: Int, start: Pos, tiles: BitArray)
+pub type Maze {
+  Maze(
+    width: Int,
+    height: Int,
+    start: Pos,
+    move_cost: Int,
+    rotate_cost: Int,
+    tiles: BitArray,
+  )
 }
 
-type Pos {
+pub type Pos {
   Pos(x: Int, y: Int)
 }
 
-type Direction {
+pub type Direction {
   Up
   Down
   Left
@@ -52,59 +61,85 @@ type Tile {
   Space
   Wall
   End
+  OutOfBounds
 }
 
-type Visited =
+pub type Visited =
   List(#(Pos, Direction))
 
 type Cache =
   Dict(#(Pos, Direction), Int)
 
-fn shortest_path(maze: Maze) -> Option(#(Int, Set(Pos))) {
-  shortest_path_loop(maze, [#(maze.start, Right, 0, [])], dict.new(), None)
+pub type RunFor {
+  AllShortest
+  SingleShortest
+}
+
+pub fn shortest_path(
+  maze: Maze,
+  run_for: RunFor,
+) -> Option(#(Int, List(Visited))) {
+  shortest_path_loop(
+    maze,
+    run_for,
+    [#(maze.start, Right, 0, [])],
+    dict.new(),
+    None,
+  )
 }
 
 fn shortest_path_loop(
   maze: Maze,
+  run_for: RunFor,
   moves: List(#(Pos, Direction, Int, Visited)),
   cache: Cache,
-  min_path: Option(#(Int, Set(Pos))),
-) -> Option(#(Int, Set(Pos))) {
+  min_path: Option(#(Int, List(Visited))),
+) -> Option(#(Int, List(Visited))) {
   case moves {
     [] -> min_path
     [#(pos, facing, score, visited), ..rest] -> {
       case min_path {
         // This already cost more than a known min path
-        Some(#(min_score, _)) if score > min_score ->
-          shortest_path_loop(maze, rest, cache, min_path)
+        Some(#(min_score, _)) if score > min_score && run_for == AllShortest ->
+          shortest_path_loop(maze, run_for, rest, cache, min_path)
+
+        Some(#(min_score, _))
+          if score >= min_score && run_for == SingleShortest
+        -> shortest_path_loop(maze, run_for, rest, cache, min_path)
 
         _ -> {
           case get(maze, pos) {
-            Wall -> shortest_path_loop(maze, rest, cache, min_path)
+            Wall | OutOfBounds ->
+              shortest_path_loop(maze, run_for, rest, cache, min_path)
 
             End -> {
-              let tiles =
-                [#(pos, facing), ..visited]
-                |> list.map(pair.first)
-                |> set.from_list
+              let visited = [#(pos, facing), ..visited]
 
               let min_path = case min_path {
                 // This is the same, add tiles
-                Some(#(min_score, t)) if score == min_score ->
-                  Some(#(score, set.union(t, tiles)))
+                Some(#(min_score, all_visited)) if score == min_score ->
+                  Some(#(score, [visited, ..all_visited]))
 
                 // This is the new minimum path
-                _ -> Some(#(score, tiles))
+                _ -> Some(#(score, [visited]))
               }
 
-              shortest_path_loop(maze, rest, cache, min_path)
+              shortest_path_loop(maze, run_for, rest, cache, min_path)
             }
 
             Space -> {
               case cache |> dict.get(#(pos, facing)) {
                 // Already visited this at a lower cost
-                Ok(cached_score) if cached_score < score -> {
-                  shortest_path_loop(maze, rest, cache, min_path)
+                Ok(cached_score)
+                  if score > cached_score && run_for == AllShortest
+                -> {
+                  shortest_path_loop(maze, run_for, rest, cache, min_path)
+                }
+
+                Ok(cached_score)
+                  if score >= cached_score && run_for == SingleShortest
+                -> {
+                  shortest_path_loop(maze, run_for, rest, cache, min_path)
                 }
 
                 _ -> {
@@ -122,8 +157,8 @@ fn shortest_path_loop(
                       let #(new_pos, new_facing) = move(pos, facing, rotation)
 
                       let new_score = case rotation {
-                        Some(_) -> score + 1001
-                        None -> score + 1
+                        Some(_) -> score + maze.rotate_cost + maze.move_cost
+                        None -> score + maze.move_cost
                       }
 
                       #(new_pos, new_facing, new_score, visited)
@@ -131,6 +166,7 @@ fn shortest_path_loop(
 
                   shortest_path_loop(
                     maze,
+                    run_for,
                     // BFS much faster than DFS due to
                     // caching impact
                     rest |> list.append(new_moves),
@@ -181,21 +217,27 @@ fn move(
 }
 
 fn get(maze: Maze, pos: Pos) -> Tile {
-  let index = pos.y * maze.width + pos.x
+  case pos.x, pos.y {
+    x, y if x < 0 || y < 0 || x >= maze.width || y >= maze.width -> OutOfBounds
 
-  let assert Ok(tile) =
-    bit_array.slice(maze.tiles, at: index, take: 1)
-    |> result.try(bit_array.to_string)
+    _, _ -> {
+      let index = pos.y * maze.width + pos.x
 
-  case tile {
-    "#" -> Wall
-    "." | "S" -> Space
-    "E" -> End
-    _ -> panic as "invalid tile"
+      let assert Ok(tile) =
+        bit_array.slice(maze.tiles, at: index, take: 1)
+        |> result.try(bit_array.to_string)
+
+      case tile {
+        "#" -> Wall
+        "." | "S" -> Space
+        "E" -> End
+        _ -> panic as "invalid tile"
+      }
+    }
   }
 }
 
-fn parse(input: String) -> Maze {
+pub fn parse(input: String) -> Maze {
   let lines = input |> string.split("\n") |> list.map(string.to_graphemes)
 
   let width = lines |> list.first |> result.unwrap([]) |> list.length
@@ -215,7 +257,7 @@ fn parse(input: String) -> Maze {
       })
     })
 
-  Maze(width, height, start, tiles)
+  Maze(width, height, start, 1, 1000, tiles)
 }
 
 const example = "#################
