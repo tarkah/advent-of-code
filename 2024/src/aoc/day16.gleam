@@ -57,7 +57,7 @@ type Rotation {
   CounterClockwise
 }
 
-type Tile {
+pub type Tile {
   Space
   Wall
   End
@@ -216,7 +216,7 @@ fn move(
   #(new_pos, new_direction)
 }
 
-fn get(maze: Maze, pos: Pos) -> Tile {
+pub fn get(maze: Maze, pos: Pos) -> Tile {
   case pos.x, pos.y {
     x, y if x < 0 || y < 0 || x >= maze.width || y >= maze.width -> OutOfBounds
 

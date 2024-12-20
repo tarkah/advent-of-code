@@ -1,6 +1,5 @@
 import gleam/bit_array
 import gleam/int
-import gleam/io
 import gleam/list
 import gleam/option.{Some}
 import gleam/result
@@ -32,12 +31,9 @@ fn run(input: String) {
     |> result.unwrap(0)
     // Don't include starting position
     |> int.subtract(1)
-    |> io.debug
 
-  // TODO: Speed this up
   let assert Ok(blocking_byte) =
-    list.range(num_bytes + 1, list.length(corruptions))
-    |> list.find_map(fn(num_bytes) {
+    binary_first(num_bytes + 1, list.length(corruptions), fn(num_bytes) {
       let corrupted_maze =
         corruptions |> list.take(num_bytes) |> list.fold(maze, corrupt)
 
@@ -45,12 +41,12 @@ fn run(input: String) {
         maze.shortest_path(corrupted_maze, maze.SingleShortest)
         |> option.is_none
       {
-        False -> Error(Nil)
+        False -> NoHit
         True -> {
           let #(_, rhs) = corruptions |> list.split(num_bytes - 1)
           let assert Ok(corrupted_byte) = rhs |> list.first
 
-          Ok(corrupted_byte)
+          Hit(corrupted_byte)
         }
       }
     })
@@ -61,6 +57,46 @@ fn run(input: String) {
     )
 
   #(part1, part2)
+}
+
+type BinaryHit(a) {
+  NoHit
+  Hit(a)
+}
+
+fn binary_first(
+  min: Int,
+  max: Int,
+  f: fn(Int) -> BinaryHit(a),
+) -> Result(a, Nil) {
+  let current = { max + min } / 2
+
+  binary_first_loop(current, min, max, Error(Nil), f)
+}
+
+fn binary_first_loop(
+  current: Int,
+  min: Int,
+  max: Int,
+  hit: Result(a, Nil),
+  f: fn(Int) -> BinaryHit(a),
+) -> Result(a, Nil) {
+  case f(current) {
+    Hit(a) if max == current -> Ok(a)
+    NoHit if min == current -> hit
+    Hit(a) -> {
+      let max = current
+      let current = { max + min } / 2
+
+      binary_first_loop(current, min, max, Ok(a), f)
+    }
+    NoHit -> {
+      let min = current
+      let current = { max + min } / 2
+
+      binary_first_loop(current, min, max, hit, f)
+    }
+  }
 }
 
 fn corrupt(maze: Maze, pos: Pos) -> Maze {
